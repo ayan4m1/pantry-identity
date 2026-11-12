@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using pantry_identity;
 using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -7,6 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllers();
+builder.Services.AddProblemDetails();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
@@ -45,7 +48,22 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 });
 builder.Services.AddAuthorization();
 
+builder.Services.AddDbContext<IdentityDbContext>(options => options
+    .UseNpgsql(builder.Configuration.GetConnectionString("IdentityDb"))
+    .UseSnakeCaseNamingConvention()
+);
+
+builder.Services.AddHealthChecks()
+    .AddNpgSql(builder.Configuration.GetConnectionString("IdentityDb")!
+);
+
 var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    using var scope = app.Services.CreateScope();
+    scope.ServiceProvider.GetRequiredService<IdentityDbContext>().Database.Migrate();
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -59,11 +77,13 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHealthChecks("/health");
 
 app.MapGet("/me", (ClaimsPrincipal user) => new
 {
     Id = user.FindFirstValue("sub"),
-    Username = user.FindFirstValue("preferred_username")
+    Username = user.FindFirstValue("preferred_username"),
+    Email = user.FindFirstValue("email")
 });
 
 app.Run();
