@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using pantry_identity.Entities;
+using Identity.Entities;
 
-namespace pantry_identity
+namespace Identity
 {
     public class IdentityDbContext(DbContextOptions<IdentityDbContext> options) : DbContext(options)
     {

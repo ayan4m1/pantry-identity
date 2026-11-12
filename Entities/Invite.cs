@@ -1,4 +1,4 @@
-﻿namespace pantry_identity.Entities
+﻿namespace Identity.Entities
 {
     public class Invite
     {

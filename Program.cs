@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using pantry_identity;
+using Identity;
 using System.Security.Claims;
 
 var builder = WebApplication.CreateBuilder(args);

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace pantry_identity.Entities
+namespace Identity.Entities
 {
     public class Household
     {
