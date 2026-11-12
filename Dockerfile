@@ -27,4 +27,4 @@ RUN dotnet publish "./Identity.csproj" -c $BUILD_CONFIGURATION -o /app/publish /
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "pantry-identity.dll"]
+ENTRYPOINT ["dotnet", "Identity.dll"]
