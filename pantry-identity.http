@@ -1,0 +1,9 @@
+@pantry_identity_HostAddress = http://localhost:11385
+
+POST {{pantry_identity_HostAddress}}/auth/login
+Content-Type: application/json
+Accept: application/json
+
+{"username": "ayan4m1", "password": "test"}
+
+###
