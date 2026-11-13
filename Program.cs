@@ -54,7 +54,7 @@ builder.Services.AddDbContext<IdentityDbContext>(options => options
 );
 
 builder.Services.AddHealthChecks()
-    .AddNpgSql(builder.Configuration.GetConnectionString("IdentityDb")!
+    .AddNpgSql(sp => sp.GetRequiredService<IConfiguration>().GetConnectionString("IdentityDb")!
 );
 
 var app = builder.Build();
