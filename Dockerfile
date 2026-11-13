@@ -18,6 +18,21 @@ COPY . .
 WORKDIR "/src/."
 RUN dotnet build "./Identity.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
+# This stage builds a standalone EF migrator
+FROM build AS bundle
+RUN dotnet tool install --global dotnet-ef
+ENV PATH="$PATH:/root/.dotnet/tools"
+RUN dotnet ef migrations bundle \
+      --project Identity.csproj \
+      --configuration Release \
+      --self-contained -r linux-x64 \
+      -o /out/efbundle
+
+# This stage is the runtime for the migrator
+FROM mcr.microsoft.com/dotnet/runtime-deps:10.0 AS migrator
+COPY --from=bundle /out/efbundle /efbundle
+ENTRYPOINT ["/efbundle"]
+
 # This stage is used to publish the service project to be copied to the final stage
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
