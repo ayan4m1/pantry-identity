@@ -4,11 +4,11 @@ namespace Identity.Controllers
 {
     [ApiController]
     [Route("household")]
-    public class HouseholdController : Controller
+    public class HouseholdController : ControllerBase
     {
         public IActionResult Index()
         {
-            return View();
+            return Ok();
         }
     }
 }

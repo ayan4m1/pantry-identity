@@ -5,7 +5,7 @@ namespace Identity.Controllers
 {
     [ApiController]
     [Route("invite")]
-    public class InviteController : Controller
+    public class InviteController : ControllerBase
     {
         [HttpPost("create")]
         public IActionResult Create([FromQuery] string householdId)
