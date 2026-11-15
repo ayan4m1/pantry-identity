@@ -1,5 +1,7 @@
 ﻿namespace Identity.Entities
 {
+    public enum InviteStatus { Pending, Accepted, Revoked, Expired }
+
     public class Invite
     {
         public Guid Id { get; set; }

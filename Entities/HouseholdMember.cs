@@ -1,5 +1,7 @@
 ﻿namespace Identity.Entities
 {
+    public enum HouseholdRole { Owner, Member }
+
     public class HouseholdMember
     {
         public Guid HouseholdId { get; set; }
