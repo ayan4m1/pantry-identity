@@ -21,7 +21,10 @@ namespace Identity.Controllers
 
             var household = new Household() { Name = name, CreatedAt = DateTime.Now };
 
-            household.Members.Add(new HouseholdMember() { UserId = userId });
+            household.Members.Add(new HouseholdMember() {
+                UserId = userId,
+                Role = HouseholdRole.Owner
+            });
 
             var result = await db.Households.AddAsync(household);
 
