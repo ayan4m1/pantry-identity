@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Identity;
 using System.Security.Claims;
+using Identity.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 var allowedOrigins = builder.Configuration
@@ -59,6 +60,8 @@ builder.Services.AddDbContext<IdentityDbContext>(options => options
 builder.Services.AddHealthChecks()
     .AddNpgSql(sp => sp.GetRequiredService<IConfiguration>().GetConnectionString("IdentityDb")!
 );
+
+builder.Services.AddTransient<IMailService, MailService>();
 
 builder.Services.AddCors(options =>
 {
