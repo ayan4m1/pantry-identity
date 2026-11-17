@@ -104,6 +104,10 @@ namespace Identity.Migrations
                         .HasColumnType("text")
                         .HasColumnName("invited_by_user_id");
 
+                    b.Property<int>("Role")
+                        .HasColumnType("integer")
+                        .HasColumnName("role");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasColumnType("text")
