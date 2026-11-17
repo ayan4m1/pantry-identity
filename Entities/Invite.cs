@@ -1,5 +1,8 @@
-﻿namespace Identity.Entities
+﻿using System.Text.Json.Serialization;
+
+namespace Identity.Entities
 {
+    [JsonConverter(typeof(JsonStringEnumConverter<InviteStatus>))]
     public enum InviteStatus { Pending, Accepted, Revoked, Expired }
 
     public class Invite
@@ -9,6 +12,7 @@
         public required string Email { get; set; }
         public required string Token { get; set; } // random, URL-safe; goes in the invite link
         public required string InvitedByUserId { get; set; }
+        public required HouseholdRole Role { get; set; }
         public InviteStatus Status { get; set; }
         public DateTimeOffset CreatedAt { get; set; }
         public DateTimeOffset ExpiresAt { get; set; }

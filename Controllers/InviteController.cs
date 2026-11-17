@@ -1,6 +1,8 @@
-﻿using Identity.Entities;
+using Identity.Entities;
+using Identity.Requests;
 using Identity.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using System.Security.Claims;
 
@@ -15,7 +17,8 @@ namespace Identity.Controllers
     ) : ControllerBase
     {
         [HttpPut("create")]
-        public async Task<IActionResult> Create([FromBody] string householdId, [FromBody] string email)
+        [EndpointName("createInvite")]
+        public async Task<ActionResult<string>> Create([FromBody] InviteCreateRequest request)
         {
             var userId = User.FindFirstValue("sub");
 
@@ -24,7 +27,9 @@ namespace Identity.Controllers
                 return Unauthorized();
             }
 
-            var household = await db.Households.FindAsync(householdId);
+            var household = await db.Households
+                .Include((household) => household.Members)
+                .FirstOrDefaultAsync((household) => household.Id == request.HouseholdId);
 
             if (household == null)
             {
@@ -40,15 +45,19 @@ namespace Identity.Controllers
 
             var guid = Guid.NewGuid();
             var newInvite = new Invite() {
-                Email = email,
+                HouseholdId = household.Id,
+                Email = request.Email,
                 Token = guid.ToString(),
-                InvitedByUserId = userId
+                InvitedByUserId = userId,
+                Role = request.Role
             };
 
             await db.Invites.AddAsync(newInvite);
 
+            await db.SaveChangesAsync();
+
             await mailService.SendEmailAsync(
-                email,
+                request.Email,
                 $"You are invited to {household.Name}!",
                 $"Click the following link to complete the invite process: {frontendSettings.Value.Hostname}/invite/{guid}"
             );
@@ -57,6 +66,7 @@ namespace Identity.Controllers
         }
 
         [HttpPut("register")]
+        [EndpointName("registerInvite")]
         public async Task<IActionResult> Register([FromQuery] string inviteToken)
         {
             var userId = User.FindFirstValue("sub");
@@ -66,7 +76,9 @@ namespace Identity.Controllers
                 return Unauthorized();
             }
 
-            var invite = db.Invites.Where((invite) => invite.Token == inviteToken).First();
+            var invite = await db.Invites
+                .Include((invite) => invite.Household)
+                .FirstOrDefaultAsync((invite) => invite.Token == inviteToken);
 
             if (invite == null)
             {
@@ -75,16 +87,19 @@ namespace Identity.Controllers
 
             invite.Household.Members.Add(new HouseholdMember() {
                 UserId = userId,
-                Role = HouseholdRole.Member
+                Role = invite.Role
             });
+
+            await db.SaveChangesAsync();
 
             return Ok();
         }
 
         [HttpDelete("delete")]
+        [EndpointName("deleteInvite")]
         public async Task<IActionResult> Delete([FromQuery] string inviteToken)
         {
-            var invite = db.Invites.Where((invite) => invite.Token == inviteToken).First();
+            var invite = await db.Invites.FirstOrDefaultAsync((invite) => invite.Token == inviteToken);
 
             if (invite == null)
             {
@@ -92,6 +107,8 @@ namespace Identity.Controllers
             }
 
             db.Invites.Remove(invite);
+
+            await db.SaveChangesAsync();
 
             return Ok();
         }

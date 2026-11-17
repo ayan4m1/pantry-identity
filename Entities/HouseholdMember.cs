@@ -1,5 +1,8 @@
-﻿namespace Identity.Entities
+﻿using System.Text.Json.Serialization;
+
+namespace Identity.Entities
 {
+    [JsonConverter(typeof(JsonStringEnumConverter<HouseholdRole>))]
     public enum HouseholdRole { Owner, Member }
 
     public class HouseholdMember
