@@ -49,6 +49,7 @@ namespace Identity.Controllers
                 Email = request.Email,
                 Token = guid.ToString(),
                 InvitedByUserId = userId,
+                Status = InviteStatus.Pending,
                 Role = request.Role
             };
 
@@ -84,6 +85,8 @@ namespace Identity.Controllers
             {
                 return BadRequest("Invalid invite token!");
             }
+
+            invite.Status = InviteStatus.Accepted;
 
             invite.Household.Members.Add(new HouseholdMember() {
                 UserId = userId,
