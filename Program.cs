@@ -78,7 +78,7 @@ builder.Services.Configure<InventorySettings>(builder.Configuration.GetSection("
 builder.Services.AddHttpClient<IInventoryClient, InventoryClient>((sp, client) =>
 {
     client.BaseAddress = new Uri(sp.GetRequiredService<IOptions<InventorySettings>>().Value.BaseUrl);
-});
+}).AddStandardResilienceHandler();
 
 builder.Services.AddCors(options =>
 {
