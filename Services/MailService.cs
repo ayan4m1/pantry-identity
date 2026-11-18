@@ -12,14 +12,9 @@ namespace Identity.Services
         Task SendEmailAsync(string to, string subject, string htmlBody);
     }
 
-    public class MailService : IMailService
+    public class MailService(IOptions<SmtpSettings> settings) : IMailService
     {
-        private readonly SmtpSettings _settings;
-
-        public MailService(IOptions<SmtpSettings> settings)
-        {
-            _settings = settings.Value;
-        }
+        private readonly SmtpSettings _settings = settings.Value;
 
         public async Task SendEmailAsync(string to, string subject, string htmlBody)
         {
