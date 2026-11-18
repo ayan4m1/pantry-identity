@@ -59,7 +59,7 @@ namespace Identity.Controllers
             await mailService.SendEmailAsync(
                 request.Email,
                 $"You are invited to {household.Name}!",
-                $"Click the following link to complete the invite process: {frontendSettings.Value.Hostname}/invite/{guid}"
+                $"Click the following link to complete the invite process: {frontendSettings.Value.BaseUrl}/invite/{guid}"
             );
 
             return Ok(guid.ToString());
