@@ -1,6 +1,7 @@
 using Identity;
 using Identity.Responses;
 using Identity.Services;
+using Identity.Settings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;

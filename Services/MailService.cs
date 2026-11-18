@@ -1,4 +1,5 @@
-﻿using MailKit;
+﻿using Identity.Settings;
+using MailKit;
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.Extensions.Options;

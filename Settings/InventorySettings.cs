@@ -1,4 +1,4 @@
-namespace Identity.Services
+namespace Identity.Settings
 {
     public class InventorySettings
     {

@@ -1,6 +1,7 @@
 using Identity.Entities;
 using Identity.Requests;
 using Identity.Services;
+using Identity.Settings;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
