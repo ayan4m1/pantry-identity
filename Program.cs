@@ -3,6 +3,7 @@ using Identity.Responses;
 using Identity.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.Security.Claims;
 using System.Text.Json;
@@ -69,7 +70,15 @@ builder.Services.AddHealthChecks()
     .AddNpgSql(sp => sp.GetRequiredService<IConfiguration>().GetConnectionString("IdentityDb")!
 );
 
+builder.Services.Configure<SmtpSettings>(builder.Configuration.GetSection("SmtpSettings"));
+builder.Services.Configure<FrontendSettings>(builder.Configuration.GetSection("FrontendSettings"));
 builder.Services.AddTransient<IMailService, MailService>();
+
+builder.Services.Configure<InventorySettings>(builder.Configuration.GetSection("InventorySettings"));
+builder.Services.AddHttpClient<IInventoryClient, InventoryClient>((sp, client) =>
+{
+    client.BaseAddress = new Uri(sp.GetRequiredService<IOptions<InventorySettings>>().Value.BaseUrl);
+});
 
 builder.Services.AddCors(options =>
 {
