@@ -3,7 +3,7 @@
 namespace Identity.Entities
 {
     [JsonConverter(typeof(JsonStringEnumConverter<InviteStatus>))]
-    public enum InviteStatus { Pending, Accepted, Expired }
+    public enum InviteStatus { Pending, Accepted, Revoked, Expired }
 
     public class Invite
     {
@@ -16,6 +16,8 @@ namespace Identity.Entities
         public InviteStatus Status { get; set; }
         public DateTimeOffset CreatedAt { get; set; }
         public DateTimeOffset ExpiresAt { get; set; }
+        public string? AcceptedByUserId { get; set; }
+        public DateTimeOffset? AcceptedAt { get; set; }
 
         public Household Household { get; set; } = null!;
     }

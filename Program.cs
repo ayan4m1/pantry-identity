@@ -1,8 +1,10 @@
 using Identity;
+using Identity.Entities;
 using Identity.Responses;
 using Identity.Services;
 using Identity.Settings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -62,6 +64,11 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 });
 builder.Services.AddAuthorization();
 
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy(Policies.HouseholdMember, p => p.AddRequirements(new HouseholdRoleRequirement(HouseholdRole.Member)))
+    .AddPolicy(Policies.HouseholdOwner, p => p.AddRequirements(new HouseholdRoleRequirement(HouseholdRole.Owner)));
+builder.Services.AddScoped<IAuthorizationHandler, HouseholdRoleHandler>();
+
 builder.Services.AddDbContext<IdentityDbContext>(options => options
     .UseNpgsql(builder.Configuration.GetConnectionString("IdentityDb"))
     .UseSnakeCaseNamingConvention()
@@ -108,8 +115,8 @@ app.MapControllers();
 app.MapHealthChecks("/health");
 
 app.MapGet("/me", (ClaimsPrincipal user) => new MeResponse(
-    user.FindFirstValue("sub"),
-    user.FindFirstValue("preferred_username"),
+    user.FindFirstValue("sub") ?? "Unknown",
+    user.FindFirstValue("preferred_username") ?? "Unknown",
     user.FindFirstValue("email")
 )).WithName("getMe");
 
