@@ -2,14 +2,14 @@
 {
     public interface IShoppingClient
     {
-        Task DeleteHouseholdProductsAsync(Guid householdId);
+        Task DeleteHouseholdStockAsync(Guid householdId);
     }
 
     public class ShoppingClient(HttpClient http) : IShoppingClient
     {
-        public async Task DeleteHouseholdProductsAsync(Guid householdId)
+        public async Task DeleteHouseholdStockAsync(Guid householdId)
         {
-            var response = await http.DeleteAsync($"internal/household/{householdId}/products");
+            var response = await http.DeleteAsync($"internal/household/{householdId}/items");
 
             response.EnsureSuccessStatusCode();
         }
