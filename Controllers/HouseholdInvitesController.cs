@@ -20,6 +20,10 @@ namespace Identity.Controllers
     {
         [HttpPost]
         [EndpointName("createInvite")]
+        [ProducesResponseType<string>(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+
         public async Task<ActionResult<string>> Create(Guid householdId, [FromBody] CreateInviteRequest request, CancellationToken ct)
         {
             var userId = User.FindFirstValue("sub");
@@ -35,7 +39,7 @@ namespace Identity.Controllers
 
             if (household == null)
             {
-                return BadRequest("Invalid household specified!");
+                return NotFound();
             }
 
             var member = household.Members.Find((member) => member.UserId == userId);
@@ -71,6 +75,7 @@ namespace Identity.Controllers
 
         [HttpGet]
         [EndpointName("listInvites")]
+        [ProducesResponseType<InviteResponse>(StatusCodes.Status200OK)]
         public async Task<ActionResult<InviteResponse>> List(Guid householdId, CancellationToken ct)
         {
             return Ok(await db.Invites
@@ -89,7 +94,10 @@ namespace Identity.Controllers
 
         [HttpDelete("revoke/{inviteToken}")]
         [EndpointName("revokeInvite")]
-        public async Task<IActionResult> Revoke(string inviteToken, CancellationToken ct)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> Revoke(Guid householdId, string inviteToken, CancellationToken ct)
         {
             var userId = User.FindFirstValue("sub");
 
@@ -100,7 +108,7 @@ namespace Identity.Controllers
 
             var invite = await db.Invites.FirstOrDefaultAsync((invite) => invite.Token == inviteToken, ct);
 
-            if (invite == null || invite.InvitedByUserId != userId)
+            if (invite == null || invite.InvitedByUserId != userId || invite.HouseholdId != householdId)
             {
                 return NotFound();
             }

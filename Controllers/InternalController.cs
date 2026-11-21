@@ -6,7 +6,7 @@ namespace Identity.Controllers
 {
     // Service-to-service endpoints; the gateway blocks /api/{service}/internal/** from the outside.
     [ApiController]
-    [Route("internal")]
+    [Route("[controller]")]
     [ApiExplorerSettings(IgnoreApi = true)]
     public class InternalController(IdentityDbContext db) : ControllerBase
     {

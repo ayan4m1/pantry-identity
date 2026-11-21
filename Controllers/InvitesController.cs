@@ -7,8 +7,8 @@ using System.Security.Claims;
 namespace Identity.Controllers
 {
     [ApiController]
-    [Route("invites")]
-    public class InviteController(IdentityDbContext db) : ControllerBase
+    [Route("[controller]")]
+    public class InvitesController(IdentityDbContext db) : ControllerBase
     {
         [HttpGet("{token}")]
         [EndpointName("getInvitePreview")]

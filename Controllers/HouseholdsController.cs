@@ -8,7 +8,7 @@ using System.Security.Claims;
 namespace Identity.Controllers
 {
     [ApiController]
-    [Route("household")]
+    [Route("[controller]")]
     public class HouseholdsController(
         IdentityDbContext db,
         IInventoryClient inventoryClient,
@@ -17,6 +17,8 @@ namespace Identity.Controllers
     {
         [HttpGet]
         [EndpointName("listHouseholds")]
+        [ProducesResponseType<List<HouseholdResponse>>(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<IReadOnlyList<HouseholdResponse>>> List(CancellationToken ct)
         {
             var userId = User.FindFirstValue("sub");
@@ -35,6 +37,8 @@ namespace Identity.Controllers
 
         [HttpPost]
         [EndpointName("createHousehold")]
+        [ProducesResponseType<HouseholdResponse>(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<HouseholdResponse>> Create([FromBody] CreateHouseholdRequest request, CancellationToken ct)
         {
             var userId = User.FindFirstValue("sub");
@@ -42,7 +46,7 @@ namespace Identity.Controllers
             // ensure the user ID is present
             if (string.IsNullOrWhiteSpace(userId))
             {
-                return NotFound();
+                return Unauthorized();
             }
 
             var household = new Household()
@@ -74,6 +78,9 @@ namespace Identity.Controllers
 
         [HttpGet("{id:guid}")]
         [EndpointName("getHousehold")]
+        [ProducesResponseType<HouseholdDetailResponse>(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<HouseholdDetailResponse>> Get(Guid id, CancellationToken ct)
         {
             var userId = User.FindFirstValue("sub");
@@ -108,6 +115,9 @@ namespace Identity.Controllers
 
         [HttpPut("{id:guid}")]
         [EndpointName("updateHousehold")]
+        [ProducesResponseType<HouseholdDetailResponse>(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<HouseholdDetailResponse>> Update(Guid id, [FromBody] UpdateHouseholdRequest request, CancellationToken ct)
         {
             var userId = User.FindFirstValue("sub");
@@ -140,6 +150,10 @@ namespace Identity.Controllers
 
         [HttpDelete]
         [EndpointName("deleteHousehold")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Delete([FromQuery] Guid householdId, CancellationToken ct)
         {
             var userId = User.FindFirstValue("sub");

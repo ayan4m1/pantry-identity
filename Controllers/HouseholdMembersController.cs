@@ -14,12 +14,15 @@ namespace Identity.Controllers
     {
         [HttpGet]
         [EndpointName("listHouseholdMembers")]
+        [ProducesResponseType<List<MemberResponse>>(StatusCodes.Status200OK)]
         public async Task<ActionResult<IReadOnlyList<MemberResponse>>> List(Guid householdId, CancellationToken ct)
             => Ok(await db.HouseholdMembers.Where((hm) => hm.HouseholdId == householdId).ToListAsync(ct));
 
         [HttpPut("{userId}")]
         [EndpointName("updateHouseholdMemberRole")]
         [Authorize(Policy = Policies.HouseholdOwner)]   // stacks on the class-level policy
+        [ProducesResponseType<MemberResponse>(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<MemberResponse>> UpdateRole(
             Guid householdId, string userId, UpdateMemberRequest request, CancellationToken ct)
         {
@@ -44,6 +47,7 @@ namespace Identity.Controllers
 
         [HttpDelete("{userId}")]
         [EndpointName("removeHouseholdMember")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
         public async Task<IActionResult> Remove(Guid householdId, string userId, CancellationToken ct)
         {
             await db.HouseholdMembers.Where((hm) => hm.HouseholdId == householdId && hm.UserId == userId).ExecuteDeleteAsync(ct);
