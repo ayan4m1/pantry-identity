@@ -33,9 +33,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 {
     options.Authority = builder.Configuration["Keycloak:Authority"];
     options.Audience = builder.Configuration["Keycloak:Audience"];
+    if (!string.IsNullOrWhiteSpace(builder.Configuration["Keycloak:MetadataAddress"]))
+    {
+#pragma warning disable CS8601 // Possible null reference assignment.
+        options.MetadataAddress = builder.Configuration["Keycloak:MetadataAddress"];
+#pragma warning restore CS8601 // Possible null reference assignment.
+    }
 
     // Discovery normally requires https; Keycloak is plain http locally.
-    options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
+    options.RequireHttpsMetadata = !(builder.Configuration["Keycloak:AllowHttp"]?.ToLower() == "true");
 
     // Keep Keycloak's claim names ("sub", "preferred_username", "email")
     // instead of renaming them to long Microsoft claim-type URIs.
@@ -43,10 +49,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
 
     options.TokenValidationParameters = new TokenValidationParameters
     {
-        ValidateIssuer = true,          // default
-        ValidateAudience = true,        // default
-        ValidateLifetime = true,        // default
-        ValidateIssuerSigningKey = true,
+        ValidIssuer = options.Authority,
+        ValidateAudience = false,
         NameClaimType = "preferred_username", // makes User.Identity.Name work
         ClockSkew = TimeSpan.FromSeconds(30)  // tighter than the 5-minute default
     };
