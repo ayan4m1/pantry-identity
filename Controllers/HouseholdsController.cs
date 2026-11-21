@@ -48,7 +48,7 @@ namespace Identity.Controllers
             var household = new Household()
             {
                 Name = request.Name,
-                CreatedAt = DateTime.Now,
+                CreatedAt = DateTime.UtcNow,
                 CreatedByUserId = userId
             };
 
@@ -57,7 +57,7 @@ namespace Identity.Controllers
                 UserId = userId,
                 Username = User.FindFirstValue("preferred_username") ?? "Unknown",
                 Role = HouseholdRole.Owner,
-                JoinedAt = DateTime.Now
+                JoinedAt = DateTime.UtcNow
             });
 
             var result = await db.Households.AddAsync(household, ct);
