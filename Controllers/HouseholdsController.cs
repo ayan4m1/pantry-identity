@@ -56,6 +56,7 @@ namespace Identity.Controllers
             household.Members.Add(new HouseholdMember()
             {
                 UserId = userId,
+                Username = User.FindFirstValue("preferred_username") ?? "Unknown",
                 Role = HouseholdRole.Owner,
                 JoinedAt = DateTime.Now
             });

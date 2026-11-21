@@ -72,6 +72,11 @@ namespace Identity.Migrations
                         .HasColumnType("character varying(16)")
                         .HasColumnName("role");
 
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("username");
+
                     b.HasKey("HouseholdId", "UserId")
                         .HasName("pk_household_members");
 

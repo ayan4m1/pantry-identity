@@ -51,6 +51,7 @@ namespace Identity.Controllers
             invite.Household.Members.Add(new HouseholdMember()
             {
                 UserId = userId,
+                Username = User.FindFirstValue("preferred_username") ?? "Unknown",
                 Role = invite.Role
             });
 

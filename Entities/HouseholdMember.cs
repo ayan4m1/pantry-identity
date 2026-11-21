@@ -9,6 +9,7 @@ namespace Identity.Entities
     {
         public Guid HouseholdId { get; set; }
         public required string UserId { get; set; } // Keycloak "sub"
+        public required string Username { get; set; } // Keycloak "preferred_username"
         public HouseholdRole Role { get; set; }
         public DateTimeOffset JoinedAt { get; set; }
 
