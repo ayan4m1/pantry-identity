@@ -104,7 +104,7 @@ namespace Identity.Controllers
                 household.Id,
                 household.Name,
                 household.CreatedAt,
-                [.. household.Members.Select((hm) => new MemberResponse(hm.UserId, hm.Role, hm.JoinedAt))]
+                [.. household.Members.Select((hm) => new MemberResponse(hm.UserId, hm.Username, hm.Role, hm.JoinedAt))]
              ));
         }
 
@@ -138,7 +138,7 @@ namespace Identity.Controllers
                 household.Id,
                 household.Name,
                 household.CreatedAt,
-                [.. household.Members.Select((hm) => new MemberResponse(hm.UserId, hm.Role, hm.JoinedAt))]
+                [.. household.Members.Select((hm) => new MemberResponse(hm.UserId, hm.Username, hm.Role, hm.JoinedAt))]
             ));
         }
 

@@ -36,6 +36,7 @@ namespace Identity.Controllers
 
             return Ok(new MemberResponse(
                 member.UserId,
+                member.Username,
                 member.Role,
                 member.JoinedAt
             ));
