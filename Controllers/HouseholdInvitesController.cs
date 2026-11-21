@@ -20,7 +20,7 @@ namespace Identity.Controllers
     {
         [HttpPost]
         [EndpointName("createInvite")]
-        public async Task<ActionResult<string>> Create(Guid householdId, [FromBody] CreateInviteRequest request)
+        public async Task<ActionResult<string>> Create(Guid householdId, [FromBody] CreateInviteRequest request, CancellationToken ct)
         {
             var userId = User.FindFirstValue("sub");
 
@@ -31,7 +31,7 @@ namespace Identity.Controllers
 
             var household = await db.Households
                 .Include((household) => household.Members)
-                .FirstOrDefaultAsync((household) => household.Id == householdId);
+                .FirstOrDefaultAsync((household) => household.Id == householdId, ct);
 
             if (household == null)
             {
@@ -55,9 +55,9 @@ namespace Identity.Controllers
                 Role = request.Role
             };
 
-            await db.Invites.AddAsync(newInvite);
+            await db.Invites.AddAsync(newInvite, ct);
 
-            await db.SaveChangesAsync();
+            await db.SaveChangesAsync(ct);
 
             await mailService.SendEmailAsync(
                 request.Email,
@@ -70,7 +70,7 @@ namespace Identity.Controllers
 
         [HttpGet]
         [EndpointName("listInvites")]
-        public async Task<ActionResult<InviteResponse>> List(Guid householdId)
+        public async Task<ActionResult<InviteResponse>> List(Guid householdId, CancellationToken ct)
         {
             return Ok(await db.Invites
                 .Where((r) => r.HouseholdId == householdId)
@@ -82,13 +82,13 @@ namespace Identity.Controllers
                     i.InvitedByUserId,
                     i.CreatedAt,
                     i.ExpiresAt
-                )).ToListAsync()
+                )).ToListAsync(ct)
             );
         }
 
         [HttpDelete("revoke/{inviteToken}")]
         [EndpointName("revokeInvite")]
-        public async Task<IActionResult> Revoke(string inviteToken)
+        public async Task<IActionResult> Revoke(string inviteToken, CancellationToken ct)
         {
             var userId = User.FindFirstValue("sub");
 
@@ -97,7 +97,7 @@ namespace Identity.Controllers
                 return Unauthorized();
             }
 
-            var invite = await db.Invites.FirstOrDefaultAsync((invite) => invite.Token == inviteToken);
+            var invite = await db.Invites.FirstOrDefaultAsync((invite) => invite.Token == inviteToken, ct);
 
             if (invite == null || invite.InvitedByUserId != userId)
             {
@@ -106,7 +106,7 @@ namespace Identity.Controllers
 
             invite.Status = InviteStatus.Revoked;
 
-            await db.SaveChangesAsync();
+            await db.SaveChangesAsync(ct);
 
             return Ok();
         }

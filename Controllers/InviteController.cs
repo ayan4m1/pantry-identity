@@ -12,11 +12,11 @@ namespace Identity.Controllers
     {
         [HttpGet("{token}")]
         [EndpointName("getInvitePreview")]
-        public async Task<ActionResult<InvitePreviewResponse>> GetPreview(string token)
+        public async Task<ActionResult<InvitePreviewResponse>> GetPreview(string token, CancellationToken ct)
         {
             var userId = User.FindFirstValue("sub");
 
-            var invite = await db.Invites.Where((i) => i.Token == token).FirstAsync();
+            var invite = await db.Invites.Where((i) => i.Token == token).FirstAsync(ct);
 
             if (invite == null || invite.Status != InviteStatus.Pending)
             {
@@ -27,7 +27,7 @@ namespace Identity.Controllers
         }
 
         [HttpPost("{token}/accept")]
-        public async Task<ActionResult<MyHouseholdResponse>> Accept(string token)
+        public async Task<ActionResult<MyHouseholdResponse>> Accept(string token, CancellationToken ct)
         {
             var userId = User.FindFirstValue("sub");
 
@@ -38,7 +38,7 @@ namespace Identity.Controllers
 
             var invite = await db.Invites
                 .Include((invite) => invite.Household)
-                .FirstOrDefaultAsync((invite) => invite.Token == token);
+                .FirstOrDefaultAsync((invite) => invite.Token == token, ct);
 
             if (invite == null)
             {
@@ -55,9 +55,9 @@ namespace Identity.Controllers
                 Role = invite.Role
             });
 
-            await db.SaveChangesAsync();
+            await db.SaveChangesAsync(ct);
 
-            return Ok();
+            return Ok(new MyHouseholdResponse(invite.HouseholdId, invite.Household.Name, invite.Role));
         }
     }
 }

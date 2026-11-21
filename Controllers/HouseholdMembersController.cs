@@ -23,8 +23,22 @@ namespace Identity.Controllers
         public async Task<ActionResult<MemberResponse>> UpdateRole(
             Guid householdId, string userId, UpdateMemberRequest request, CancellationToken ct)
         {
-            // Ok(await members.UpdateRoleAsync(householdId, userId, request.Role, ct));
-            return Ok();
+            var member = await db.HouseholdMembers.Where(hm => hm.HouseholdId == householdId && hm.UserId == userId).FirstAsync(ct);
+
+            if (member == null)
+            {
+                return NotFound();
+            }
+
+            member.Role = request.Role;
+
+            await db.SaveChangesAsync(ct);
+
+            return Ok(new MemberResponse(
+                member.UserId,
+                member.Role,
+                member.JoinedAt
+            ));
         }
 
         [HttpDelete("{userId}")]

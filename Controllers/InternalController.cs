@@ -1,4 +1,4 @@
-using Identity.Entities;
+using Identity.Responses;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,17 +10,12 @@ namespace Identity.Controllers
     [ApiExplorerSettings(IgnoreApi = true)]
     public class InternalController(IdentityDbContext db) : ControllerBase
     {
-        [HttpGet("household/{householdId:guid}/member/{userId}")]
-        public async Task<ActionResult<HouseholdRole>> GetMemberRole(Guid householdId, string userId)
+        [HttpGet("household/{householdId:guid}/members/{userId}")]
+        public async Task<ActionResult<MembershipCheckResponse>> IsHouseholdMember(Guid householdId, string userId, CancellationToken ct)
         {
-            var member = await db.HouseholdMembers.FindAsync(householdId, userId);
+            var member = await db.HouseholdMembers.Where(hm => hm.HouseholdId == householdId && hm.UserId == userId).FirstAsync(ct);
 
-            if (member == null)
-            {
-                return NotFound();
-            }
-
-            return Ok(member.Role);
+            return Ok(new MembershipCheckResponse(member != null, member?.Role));
         }
     }
 }

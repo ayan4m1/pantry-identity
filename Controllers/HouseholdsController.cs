@@ -1,7 +1,6 @@
 using Identity.Entities;
 using Identity.Requests;
 using Identity.Responses;
-using Identity.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
@@ -18,7 +17,7 @@ namespace Identity.Controllers
     {
         [HttpGet]
         [EndpointName("listHouseholds")]
-        public async Task<ActionResult<IReadOnlyList<HouseholdResponse>>> List()
+        public async Task<ActionResult<IReadOnlyList<HouseholdResponse>>> List(CancellationToken ct)
         {
             var userId = User.FindFirstValue("sub");
 
@@ -31,12 +30,12 @@ namespace Identity.Controllers
             return Ok(await db.Households
                 .Where((household) => household.Members.Any((member) => member.UserId == userId))
                 .Select((household) => new HouseholdResponse(household.Id, household.Name, household.CreatedAt, household.Members.Count))
-                .ToListAsync());
+                .ToListAsync(ct));
         }
 
         [HttpPost]
         [EndpointName("createHousehold")]
-        public async Task<ActionResult<HouseholdResponse>> Create([FromBody] CreateHouseholdRequest request)
+        public async Task<ActionResult<HouseholdResponse>> Create([FromBody] CreateHouseholdRequest request, CancellationToken ct)
         {
             var userId = User.FindFirstValue("sub");
 
@@ -61,9 +60,9 @@ namespace Identity.Controllers
                 JoinedAt = DateTime.Now
             });
 
-            var result = await db.Households.AddAsync(household);
+            var result = await db.Households.AddAsync(household, ct);
 
-            await db.SaveChangesAsync();
+            await db.SaveChangesAsync(ct);
 
             return CreatedAtAction(nameof(Create), new { householdId = result.Entity.Id }, new HouseholdResponse(
                 result.Entity.Id,
@@ -75,7 +74,7 @@ namespace Identity.Controllers
 
         [HttpGet("{id:guid}")]
         [EndpointName("getHousehold")]
-        public async Task<ActionResult<HouseholdDetailResponse>> Get(Guid id)
+        public async Task<ActionResult<HouseholdDetailResponse>> Get(Guid id, CancellationToken ct)
         {
             var userId = User.FindFirstValue("sub");
 
@@ -85,7 +84,9 @@ namespace Identity.Controllers
                 return Unauthorized();
             }
 
-            var household = await db.Households.FindAsync(id);
+#pragma warning disable CA2016
+            var household = await db.Households.FindAsync(id, ct);
+#pragma warning restore CA2016
 
             // ensure the household ID is valid
             if (household == null)
@@ -109,7 +110,7 @@ namespace Identity.Controllers
 
         [HttpPut("{id:guid}")]
         [EndpointName("updateHousehold")]
-        public async Task<ActionResult<HouseholdDetailResponse>> Update(Guid id, [FromBody] UpdateHouseholdRequest request)
+        public async Task<ActionResult<HouseholdDetailResponse>> Update(Guid id, [FromBody] UpdateHouseholdRequest request, CancellationToken ct)
         {
             var userId = User.FindFirstValue("sub");
 
@@ -119,7 +120,9 @@ namespace Identity.Controllers
                 return Unauthorized();
             }
 
-            var household = await db.Households.FindAsync(id);
+#pragma warning disable CA2016
+            var household = await db.Households.FindAsync(id, ct);
+#pragma warning restore CA2016
 
             // ensure the household ID is valid
             if (household == null)
@@ -129,7 +132,7 @@ namespace Identity.Controllers
 
             household.Name = request.Name;
 
-            await db.SaveChangesAsync();
+            await db.SaveChangesAsync(ct);
 
             return Ok(new HouseholdDetailResponse(
                 household.Id,
@@ -141,7 +144,7 @@ namespace Identity.Controllers
 
         [HttpDelete]
         [EndpointName("deleteHousehold")]
-        public async Task<IActionResult> Delete([FromQuery] Guid householdId)
+        public async Task<IActionResult> Delete([FromQuery] Guid householdId, CancellationToken ct)
         {
             var userId = User.FindFirstValue("sub");
 
@@ -151,7 +154,9 @@ namespace Identity.Controllers
                 return Unauthorized();
             }
 
-            var household = await db.Households.FindAsync(householdId);
+#pragma warning disable CA2016
+            var household = await db.Households.FindAsync(householdId, ct);
+#pragma warning restore CA2016
 
             // ensure the household ID is valid
             if (household == null)
@@ -159,7 +164,9 @@ namespace Identity.Controllers
                 return NotFound();
             }
 
-            var member = await db.HouseholdMembers.FindAsync(householdId, userId);
+#pragma warning disable CA2016
+            var member = await db.HouseholdMembers.FindAsync(householdId, userId, ct);
+#pragma warning restore CA2016
 
             // only allow household owner to delete it
             if (member?.Role != HouseholdRole.Owner)
@@ -169,13 +176,13 @@ namespace Identity.Controllers
 
             db.Households.Remove(household);
 
-            await db.SaveChangesAsync();
+            await db.SaveChangesAsync(ct);
 
             // Best-effort cleanup of stock rows that referenced this household. If this fails the
             // rows are orphaned; a transactional outbox would make this delivery guaranteed.
             try
             {
-                await inventoryClient.DeleteHouseholdStockAsync(householdId);
+                await inventoryClient.DeleteHouseholdStockAsync(householdId, ct);
             }
             catch (HttpRequestException ex)
             {
