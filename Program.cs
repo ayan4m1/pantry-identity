@@ -92,6 +92,12 @@ builder.Services.AddHttpClient<IInventoryClient, InventoryClient>((sp, client) =
     client.BaseAddress = new Uri(sp.GetRequiredService<IOptions<InventorySettings>>().Value.BaseUrl);
 }).AddStandardResilienceHandler();
 
+builder.Services.Configure<ShoppingSettings>(builder.Configuration.GetSection("ShoppingSettings"));
+builder.Services.AddHttpClient<IShoppingClient, ShoppingClient>((sp, client) =>
+{
+    client.BaseAddress = new Uri(sp.GetRequiredService<IOptions<ShoppingSettings>>().Value.BaseUrl);
+}).AddStandardResilienceHandler();
+
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
