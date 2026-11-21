@@ -175,10 +175,7 @@ namespace Identity.Controllers
             // rows are orphaned; a transactional outbox would make this delivery guaranteed.
             try
             {
-                await Task.WhenAll(
-                    inventoryClient.DeleteHouseholdProductsAsync(householdId),
-                    shoppingClient.DeleteHouseholdProductsAsync(householdId)
-                );
+                await inventoryClient.DeleteHouseholdStockAsync(householdId);
             }
             catch (HttpRequestException ex)
             {
