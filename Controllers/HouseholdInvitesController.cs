@@ -52,6 +52,7 @@ namespace Identity.Controllers
                 Token = token.ToString(),
                 InvitedByUserId = userId,
                 Status = InviteStatus.Pending,
+                ExpiresAt = DateTime.UtcNow.AddDays(7),
                 Role = request.Role
             };
 
