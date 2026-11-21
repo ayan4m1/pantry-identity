@@ -84,9 +84,7 @@ namespace Identity.Controllers
                 return Unauthorized();
             }
 
-#pragma warning disable CA2016
-            var household = await db.Households.FindAsync(id, ct);
-#pragma warning restore CA2016
+            var household = await db.Households.Include(h => h.Members).Where(h => h.Id == id).FirstAsync(ct);
 
             // ensure the household ID is valid
             if (household == null)
@@ -120,9 +118,7 @@ namespace Identity.Controllers
                 return Unauthorized();
             }
 
-#pragma warning disable CA2016
-            var household = await db.Households.FindAsync(id, ct);
-#pragma warning restore CA2016
+            var household = await db.Households.Include(h => h.Members).Where(h => h.Id == id).FirstAsync(ct);
 
             // ensure the household ID is valid
             if (household == null)
@@ -154,9 +150,7 @@ namespace Identity.Controllers
                 return Unauthorized();
             }
 
-#pragma warning disable CA2016
-            var household = await db.Households.FindAsync(householdId, ct);
-#pragma warning restore CA2016
+            var household = await db.Households.FindAsync([householdId], ct);
 
             // ensure the household ID is valid
             if (household == null)
@@ -164,9 +158,7 @@ namespace Identity.Controllers
                 return NotFound();
             }
 
-#pragma warning disable CA2016
-            var member = await db.HouseholdMembers.FindAsync(householdId, userId, ct);
-#pragma warning restore CA2016
+            var member = await db.HouseholdMembers.FindAsync([householdId, userId], ct);
 
             // only allow household owner to delete it
             if (member?.Role != HouseholdRole.Owner)
