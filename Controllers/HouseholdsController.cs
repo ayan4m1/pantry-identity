@@ -13,7 +13,6 @@ namespace Identity.Controllers
     public class HouseholdsController(
         IdentityDbContext db,
         IInventoryClient inventoryClient,
-        IShoppingClient shoppingClient,
         ILogger<HouseholdsController> logger
     ) : ControllerBase
     {
