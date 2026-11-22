@@ -65,8 +65,8 @@ namespace Identity.Controllers
 
         [HttpGet]
         [EndpointName("listInvites")]
-        [ProducesResponseType<InviteResponse>(StatusCodes.Status200OK)]
-        public async Task<ActionResult<InviteResponse>> List(Guid householdId, CancellationToken ct)
+        [ProducesResponseType<List<InviteResponse>>(StatusCodes.Status200OK)]
+        public async Task<ActionResult<IReadOnlyList<InviteResponse>>> List(Guid householdId, CancellationToken ct)
         {
             return Ok(await db.Invites
                 .Where((r) => r.HouseholdId == householdId)
