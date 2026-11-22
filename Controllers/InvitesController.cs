@@ -1,5 +1,6 @@
 ﻿using Identity.Entities;
 using Identity.Responses;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
@@ -8,6 +9,7 @@ namespace Identity.Controllers
 {
     [ApiController]
     [Route("[controller]")]
+    [Authorize]
     public class InvitesController(IdentityDbContext db) : ControllerBase
     {
         [HttpGet("{token}")]
@@ -17,13 +19,6 @@ namespace Identity.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<InvitePreviewResponse>> GetPreview(string token, CancellationToken ct)
         {
-            var userId = User.FindFirstValue("sub");
-
-            if (userId == null)
-            {
-                return Unauthorized();
-            }
-
             var invite = await db.Invites.Where((i) => i.Token == token).FirstAsync(ct);
 
             if (invite == null || invite.Status != InviteStatus.Pending)
@@ -42,12 +37,7 @@ namespace Identity.Controllers
         [ProducesResponseType(StatusCodes.Status410Gone)]
         public async Task<ActionResult<MyHouseholdResponse>> Accept(string token, CancellationToken ct)
         {
-            var userId = User.FindFirstValue("sub");
-
-            if (userId == null)
-            {
-                return Unauthorized();
-            }
+            var userId = User.FindFirstValue("sub")!;
 
             var invite = await db.Invites
                 .Include((invite) => invite.Household)

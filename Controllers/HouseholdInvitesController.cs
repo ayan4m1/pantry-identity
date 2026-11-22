@@ -3,6 +3,7 @@ using Identity.Requests;
 using Identity.Responses;
 using Identity.Services;
 using Identity.Settings;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -12,6 +13,9 @@ namespace Identity.Controllers
 {
     [ApiController]
     [Route("households/{householdId:guid}/invites")]
+    [Authorize(Policy = Policies.HouseholdMember)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public class HouseholdInvitesController(
         IdentityDbContext db,
         IMailService mailService,
@@ -26,27 +30,13 @@ namespace Identity.Controllers
 
         public async Task<ActionResult<string>> Create(Guid householdId, [FromBody] CreateInviteRequest request, CancellationToken ct)
         {
-            var userId = User.FindFirstValue("sub");
+            var userId = User.FindFirstValue("sub")!;
 
-            if (userId == null)
-            {
-                return Unauthorized();
-            }
-
-            var household = await db.Households
-                .Include((household) => household.Members)
-                .FirstOrDefaultAsync((household) => household.Id == householdId, ct);
+            var household = await db.Households.FindAsync([householdId], ct);
 
             if (household == null)
             {
                 return NotFound();
-            }
-
-            var member = household.Members.Find((member) => member.UserId == userId);
-
-            if (member == null)
-            {
-                return Unauthorized();
             }
 
             var token = Guid.NewGuid();
@@ -99,12 +89,7 @@ namespace Identity.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Revoke(Guid householdId, string inviteToken, CancellationToken ct)
         {
-            var userId = User.FindFirstValue("sub");
-
-            if (userId == null)
-            {
-                return Unauthorized();
-            }
+            var userId = User.FindFirstValue("sub")!;
 
             var invite = await db.Invites.FirstOrDefaultAsync((invite) => invite.Token == inviteToken, ct);
 

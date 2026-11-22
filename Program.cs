@@ -130,6 +130,6 @@ app.MapGet("/me", (ClaimsPrincipal user) => new MeResponse(
     user.FindFirstValue("sub") ?? "Unknown",
     user.FindFirstValue("preferred_username") ?? "Unknown",
     user.FindFirstValue("email")
-)).WithName("getMe");
+)).WithName("getMe").RequireAuthorization();
 
 app.Run();

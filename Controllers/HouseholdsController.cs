@@ -1,6 +1,7 @@
 using Identity.Entities;
 using Identity.Requests;
 using Identity.Responses;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
@@ -9,6 +10,7 @@ namespace Identity.Controllers
 {
     [ApiController]
     [Route("[controller]")]
+    [Authorize]
     public class HouseholdsController(
         IdentityDbContext db,
         IInventoryClient inventoryClient,
@@ -21,13 +23,7 @@ namespace Identity.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<IReadOnlyList<HouseholdResponse>>> List(CancellationToken ct)
         {
-            var userId = User.FindFirstValue("sub");
-
-            // ensure the user ID is present
-            if (userId == null)
-            {
-                return Unauthorized();
-            }
+            var userId = User.FindFirstValue("sub")!;
 
             return Ok(await db.Households
                 .Where((household) => household.Members.Any((member) => member.UserId == userId))
@@ -41,13 +37,7 @@ namespace Identity.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<HouseholdResponse>> Create([FromBody] CreateHouseholdRequest request, CancellationToken ct)
         {
-            var userId = User.FindFirstValue("sub");
-
-            // ensure the user ID is present
-            if (string.IsNullOrWhiteSpace(userId))
-            {
-                return Unauthorized();
-            }
+            var userId = User.FindFirstValue("sub")!;
 
             var household = new Household()
             {
@@ -83,15 +73,9 @@ namespace Identity.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<HouseholdDetailResponse>> Get(Guid id, CancellationToken ct)
         {
-            var userId = User.FindFirstValue("sub");
+            var userId = User.FindFirstValue("sub")!;
 
-            // ensure the user ID is present
-            if (userId == null)
-            {
-                return Unauthorized();
-            }
-
-            var household = await db.Households.Include(h => h.Members).Where(h => h.Id == id).FirstAsync(ct);
+            var household = await db.Households.Include(h => h.Members).FirstOrDefaultAsync(h => h.Id == id, ct);
 
             // ensure the household ID is valid
             if (household == null)
@@ -120,18 +104,18 @@ namespace Identity.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<HouseholdDetailResponse>> Update(Guid id, [FromBody] UpdateHouseholdRequest request, CancellationToken ct)
         {
-            var userId = User.FindFirstValue("sub");
+            var userId = User.FindFirstValue("sub")!;
 
-            // ensure the user ID is present
-            if (userId == null)
-            {
-                return Unauthorized();
-            }
-
-            var household = await db.Households.Include(h => h.Members).Where(h => h.Id == id).FirstAsync(ct);
+            var household = await db.Households.Include(h => h.Members).FirstOrDefaultAsync(h => h.Id == id, ct);
 
             // ensure the household ID is valid
             if (household == null)
+            {
+                return NotFound();
+            }
+
+            // ensure the current user is in this household
+            if (household.Members.Find((hm) => hm.UserId == userId) == null)
             {
                 return NotFound();
             }
@@ -156,13 +140,7 @@ namespace Identity.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> Delete([FromQuery] Guid householdId, CancellationToken ct)
         {
-            var userId = User.FindFirstValue("sub");
-
-            // ensure the user ID is present
-            if (userId == null)
-            {
-                return Unauthorized();
-            }
+            var userId = User.FindFirstValue("sub")!;
 
             var household = await db.Households.FindAsync([householdId], ct);
 

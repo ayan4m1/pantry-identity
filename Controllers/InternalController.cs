@@ -10,12 +10,17 @@ namespace Identity.Controllers
     [ApiExplorerSettings(IgnoreApi = true)]
     public class InternalController(IdentityDbContext db) : ControllerBase
     {
-        [HttpGet("household/{householdId:guid}/members/{userId}")]
+        [HttpGet("household/{householdId:guid}/member/{userId}")]
         public async Task<ActionResult<MembershipCheckResponse>> IsHouseholdMember(Guid householdId, string userId, CancellationToken ct)
         {
-            var member = await db.HouseholdMembers.Where(hm => hm.HouseholdId == householdId && hm.UserId == userId).FirstAsync(ct);
+            var member = await db.HouseholdMembers.Where(hm => hm.HouseholdId == householdId && hm.UserId == userId).FirstOrDefaultAsync(ct);
 
-            return Ok(new MembershipCheckResponse(member != null, member?.Role));
+            if (member == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(new MembershipCheckResponse(true, member.Role));
         }
     }
 }
