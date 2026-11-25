@@ -82,16 +82,16 @@ namespace Identity.Controllers
             );
         }
 
-        [HttpDelete("revoke/{inviteToken}")]
+        [HttpDelete("revoke/{emailAddress}")]
         [EndpointName("revokeInvite")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> Revoke(Guid householdId, string inviteToken, CancellationToken ct)
+        public async Task<IActionResult> Revoke(Guid householdId, string emailAddress, CancellationToken ct)
         {
             var userId = User.FindFirstValue("sub")!;
 
-            var invite = await db.Invites.FirstOrDefaultAsync((invite) => invite.Token == inviteToken, ct);
+            var invite = await db.Invites.FirstOrDefaultAsync((invite) => invite.Email == emailAddress, ct);
 
             if (invite == null || invite.InvitedByUserId != userId || invite.HouseholdId != householdId)
             {
